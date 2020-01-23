@@ -1,14 +1,17 @@
 import React, { useState, useEffect, createRef } from 'react';
-import './App.css';
+
 import Point from './components/Point';
 import Button from './components/Button';
 import Canvas from './components/Canvas';
+
 import {
   getParallelogramFinalVertex,
   getParallelogramArea,
   getParallelogramCenter,
   getCircleRadius
 } from './functions/math';
+
+import './App.css';
 
 const MAX_VERTICES = 3;
 
@@ -129,15 +132,24 @@ const App = () => {
     setPoints(newPoints);
   }
 
+  const pArea = getParallelogramArea([...points, finalPoint]);
+  const cRadius = getCircleRadius(getParallelogramArea([...points, finalPoint]));
+  const cArea = (Math.pow(getCircleRadius(getParallelogramArea([...points, finalPoint])), 2) * Math.PI).toFixed(0);
+
   return (
     <>
       <div className="App" onClick={handleClick} onMouseMove={handleDrag}>
         <Canvas ref={parallelRef} />
         <Canvas ref={circleRef} />
-        <Button onClick={handleReset} message={"Reset"} />
-        <p>Parallelogram area: {getParallelogramArea([...points, finalPoint])}px²</p>
-        <p>Circle radius: {getCircleRadius(getParallelogramArea([...points, finalPoint]))}px</p>
-        <p>Circle area: {(Math.pow(getCircleRadius(getParallelogramArea([...points, finalPoint])), 2) * Math.PI).toFixed(0)}px²</p>
+        <div className="info">
+          <p>Parallelogram area: {pArea}px²</p>
+          <p>Circle radius: {cRadius.toFixed(2)}px</p>
+          <p>Circle area: {cArea}px²</p>
+          <div className="button-wrapper">
+            <Button onClick={handleReset} message={"Reset"} />
+            <Button onClick={() => alert("about")} message={"About"} />
+          </div>
+        </div>
         {points.map((point, index) =>
           <Point
             key={index}
