@@ -3,7 +3,14 @@ import './App.css';
 import Point from './components/Point';
 import Button from './components/Button';
 import Canvas from './components/Canvas';
-import { getParallelogramArea, getParallelogramCenter, getCircleRadius } from './functions/math';
+import {
+  getParallelogramFinalVertex,
+  getParallelogramArea,
+  getParallelogramCenter,
+  getCircleRadius
+} from './functions/math';
+
+const MAX_VERTICES = 3;
 
 const App = () => {
   const [points, setPoints] = useState([]);
@@ -16,20 +23,11 @@ const App = () => {
   const parallelRef = createRef();
   const circleRef = createRef();
 
+  // if we have all 3 points, calculate final point
   useEffect(() => {
-    // if we have all 3 points, calculate final point
-    if (points.length === 3) {
-      /**
-      * considering we have a parallelogram with vertexes A, B, C
-      * we can get the last vertex's (D) coordinates with
-      *  Dx = Ax + Cx - Bx
-      *  Dy = Ay + Cy - By
-      *  https://www.geeksforgeeks.org/find-missing-point-parallelogram/
-      **/
-      setFinalPoint({
-        left: points[0].left + (points[2].left - points[1].left),
-        top: points[0].top + (points[2].top - points[1].top),
-      });
+    if (points.length === MAX_VERTICES) {
+      const finalPoint = getParallelogramFinalVertex(points)
+      setFinalPoint(finalPoint);
     }
   }, [points]);
 
@@ -60,13 +58,17 @@ const App = () => {
     ctx.strokeStyle = "blue";
     ctx.beginPath();
     // Redo to use a loop with all vertices in an array
-    // Draw a line from each vertex to the next
-    ctx.moveTo(points[0].left, points[0].top);
-    ctx.lineTo(points[1].left, points[1].top);
-    ctx.lineTo(points[2].left, points[2].top);
-    ctx.lineTo(finalPoint.left, finalPoint.top);
-    // Then back to the first to close the polygon
-    ctx.lineTo(points[0].left, points[0].top);
+    const vertices = [...points, finalPoint];
+
+    vertices.forEach((vertex, index) => {
+      if (index === 0) ctx.moveTo(vertex.left, vertex.top);
+      // Draw a line from each vertex to the next
+      else ctx.lineTo(vertex.left, vertex.top);
+
+      // Then back to the first to close the polygon
+      if (index === vertices.length - 1) ctx.lineTo(vertices[0].left, vertices[0].top);
+    });
+
     ctx.stroke();
   }
 
@@ -80,7 +82,7 @@ const App = () => {
     const pArea = getParallelogramArea([...points, finalPoint]);
     const cRadius = getCircleRadius(pArea);
 
-    ctx.strokeStyle = "yellow";
+    ctx.strokeStyle = "#d6cc02";
     ctx.beginPath();
     // center X, center Y, radius, arc start, arc end
     // 2 * pi means 360 degrees
@@ -89,7 +91,7 @@ const App = () => {
   }
 
   const handleClick = (e) => {
-    if (points.length < 3) {
+    if (points.length < MAX_VERTICES) {
       const top = e.clientY;
       const left = e.clientX;
       setPoints([...points, { top, left }]);
@@ -116,7 +118,7 @@ const App = () => {
   const stopDrag = () => setDragging({ dragging: false, index: 0 });
 
   const handleDrag = (e) => {
-    if (!dragStatus.dragging || points.length < 3) return;
+    if (!dragStatus.dragging || points.length < MAX_VERTICES) return;
 
     // Spread to new array to avoid mutating
     const newPoints = [...points];
@@ -143,11 +145,11 @@ const App = () => {
             left={point.left}
             onMouseDown={startDrag(index)}
             onMouseUp={stopDrag}
-            draggable={points.length === 3}
+            draggable={points.length === MAX_VERTICES}
           />
         )}
         {finalPoint.top && <Point top={finalPoint.top} left={finalPoint.left} final />}
-        {centerPoint.top && <Point top={centerPoint.top} left={centerPoint.left} final />}
+        {centerPoint.top && <Point top={centerPoint.top} left={centerPoint.left} center />}
       </div>
     </>
   );

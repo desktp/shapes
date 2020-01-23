@@ -1,3 +1,19 @@
+export const getParallelogramFinalVertex = (vertices = []) => {
+  if (vertices.length !== 3) return {};
+
+  /**
+    * considering we have a parallelogram with vertexes A, B, C
+    * we can get the last vertex's (D) coordinates with
+    *  Dx = Ax + Cx - Bx
+    *  Dy = Ay + Cy - By
+    *  https://www.geeksforgeeks.org/find-missing-point-parallelogram/
+    **/
+  return {
+    left: vertices[0].left + (vertices[2].left - vertices[1].left),
+    top: vertices[0].top + (vertices[2].top - vertices[1].top),
+  };
+}
+
 export const getParallelogramArea = (vertices = []) => {
   if (vertices.length !== 4) return 0;
  
