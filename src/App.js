@@ -6,6 +6,7 @@ import Button from './components/Button';
 const App = () => {
   const [points, setPoints] = useState([]);
   const [finalPoint, setFinalPoint] = useState({});
+  const [centerPoint, setCenterPoint] = useState({});
   const [dragStatus, setDragging] = useState({ dragging: false, index: 0 });
 
   useEffect(() => {
@@ -26,8 +27,17 @@ const App = () => {
   }, [points]);
 
   useEffect(() => {
-    if (finalPoint.top) drawParallelogram();
+    if (finalPoint.top) {
+      drawParallelogram();
+      getParallelogramCenter();
+    };
   }, [finalPoint]);
+
+  useEffect(() => {
+    if (centerPoint.top) {
+      drawCircle();
+    }
+  }, [centerPoint]);
 
   const drawParallelogram = () => {
     var c = document.querySelector("canvas");
@@ -44,6 +54,25 @@ const App = () => {
     ctx.lineTo(finalPoint.left, finalPoint.top);
     ctx.lineTo(points[0].left, points[0].top);
     ctx.stroke();
+  }
+
+  const drawCircle = () => {
+    var c = document.querySelector("canvas");
+    // Set canvas size to match screen
+    c.width = document.body.clientWidth; //document.width is obsolete
+    c.height = document.body.clientHeight; //document.height is obsolete
+ 
+    var ctx = c.getContext("2d");
+    ctx.strokeStyle = "yellow";
+    ctx.beginPath();
+    ctx.arc(centerPoint.left, centerPoint.top, 50, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+
+  const getParallelogramCenter = () => {
+    const centerX = (points[0].left + points[1].left + points[2].left + finalPoint.left) / 4;
+    const centerY = (points[0].top + points[1].top + points[2].top + finalPoint.top) / 4;
+    setCenterPoint({ top: centerY, left: centerX });
   }
 
   const handleClick = (e) => {
@@ -89,6 +118,7 @@ const App = () => {
         <Button onClick={handleReset} message={"Reset"} />
         {points.map((point, index) => <Point key={point.top} top={point.top} left={point.left} onMouseDown={startDrag(index)} onMouseUp={stopDrag} draggable={points.length === 3} />)}
         {finalPoint.top && <Point top={finalPoint.top} left={finalPoint.left} final />}
+        {centerPoint.top && <Point top={centerPoint.top} left={centerPoint.left} final />}
       </div>
     </>
   );
