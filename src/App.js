@@ -3,6 +3,7 @@ import React, { useState, useEffect, createRef } from 'react';
 import Point from './components/Point';
 import Button from './components/Button';
 import Canvas from './components/Canvas';
+import Modal from './components/Modal';
 
 import {
   getParallelogramFinalVertex,
@@ -11,7 +12,7 @@ import {
   getCircleRadius
 } from './functions/math';
 
-import './App.css';
+import css from './App.module.css';
 
 const MAX_VERTICES = 3;
 
@@ -20,6 +21,7 @@ const App = () => {
   const [finalPoint, setFinalPoint] = useState({});
   const [centerPoint, setCenterPoint] = useState({});
   const [dragStatus, setDragging] = useState({ dragging: false, index: 0 });
+  const [modalOpen, setModalOpen] = useState(false);
 
   // Using refs so we can get the DOM node without
   // resorting to querySelector or similar
@@ -113,6 +115,16 @@ const App = () => {
     })
   }
 
+  const handleOpenModal = (e) => {
+    e.stopPropagation();
+    setModalOpen(true);
+  }
+
+  const handleCloseModal = (e) => {
+    e.stopPropagation();
+    setModalOpen(false);
+  }
+
   const startDrag = (pointIndex) => (e) => {
     e.stopPropagation();
     setDragging({ dragging: true, index: pointIndex });
@@ -138,18 +150,20 @@ const App = () => {
 
   return (
     <>
-      <div className="App" onClick={handleClick} onMouseMove={handleDrag}>
+      <div className={css.App} onClick={handleClick} onMouseMove={handleDrag}>
         <Canvas ref={parallelRef} />
         <Canvas ref={circleRef} />
-        <div className="info">
+
+        <div className={css.info}>
           <p>Parallelogram area: {pArea}px²</p>
           <p>Circle radius: {cRadius.toFixed(2)}px</p>
           <p>Circle area: {cArea}px²</p>
-          <div className="button-wrapper">
+          <div className={css.buttonWrapper}>
             <Button onClick={handleReset} message={"Reset"} />
-            <Button onClick={() => alert("about")} message={"About"} />
+            <Button onClick={handleOpenModal} message={"About"} />
           </div>
         </div>
+
         {points.map((point, index) =>
           <Point
             key={index}
@@ -160,9 +174,11 @@ const App = () => {
             draggable={points.length === MAX_VERTICES}
           />
         )}
+
         {finalPoint.top && <Point top={finalPoint.top} left={finalPoint.left} final />}
         {centerPoint.top && <Point top={centerPoint.top} left={centerPoint.left} center />}
       </div>
+      <Modal open={modalOpen} closeModal={handleCloseModal} />
     </>
   );
 }
