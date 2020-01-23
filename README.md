@@ -24,7 +24,7 @@ Currently only the math operations have implemented tests.
 
 ## Create build
 ```bash
-$ `yarn build`
+$ yarn build
 ```
 
 Builds the app for production to the `build` folder.<br />
