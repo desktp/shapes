@@ -107,7 +107,9 @@ const App = () => {
     e.stopPropagation();
     setPoints([]);
     setFinalPoint([]);
+    setCenterPoint({});
 
+    // Wipe all canvases
     const elements = document.querySelectorAll("canvas");
     elements.forEach(el => {
       const ctx = el.getContext("2d");
@@ -115,6 +117,8 @@ const App = () => {
     })
   }
 
+  // We stopPropagation() of most click events
+  // to avoid creating a point on the board
   const handleOpenModal = (e) => {
     e.stopPropagation();
     setModalOpen(true);
@@ -125,6 +129,7 @@ const App = () => {
     setModalOpen(false);
   }
 
+  // Sets a vertex as "being dragged"
   const startDrag = (pointIndex) => (e) => {
     e.stopPropagation();
     setDragging({ dragging: true, index: pointIndex });
@@ -132,6 +137,8 @@ const App = () => {
 
   const stopDrag = () => setDragging({ dragging: false, index: 0 });
 
+  // Reads mouse position and updates vertex position
+  // if there's one being dragged
   const handleDrag = (e) => {
     if (!dragStatus.dragging || points.length < MAX_VERTICES) return;
 
