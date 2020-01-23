@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Point from './components/Point';
 import Button from './components/Button';
+import { getParallelogramArea, getCircleRadius } from './functions/math';
 
 const App = () => {
   const [points, setPoints] = useState([]);
@@ -40,7 +41,7 @@ const App = () => {
   }, [centerPoint]);
 
   const drawParallelogram = () => {
-    var c = document.querySelector("canvas");
+    var c = document.querySelector(".parallelogram-canvas");
     // Set canvas size to match screen
     c.width = document.body.clientWidth; //document.width is obsolete
     c.height = document.body.clientHeight; //document.height is obsolete
@@ -57,7 +58,7 @@ const App = () => {
   }
 
   const drawCircle = () => {
-    var c = document.querySelector("canvas");
+    var c = document.querySelector(".circle-canvas");
     // Set canvas size to match screen
     c.width = document.body.clientWidth; //document.width is obsolete
     c.height = document.body.clientHeight; //document.height is obsolete
@@ -65,7 +66,7 @@ const App = () => {
     var ctx = c.getContext("2d");
     ctx.strokeStyle = "yellow";
     ctx.beginPath();
-    ctx.arc(centerPoint.left, centerPoint.top, 50, 0, 2 * Math.PI);
+    ctx.arc(centerPoint.left, centerPoint.top, getCircleRadius(getParallelogramArea([...points, finalPoint])), 0, 2 * Math.PI);
     ctx.stroke();
   }
 
@@ -114,9 +115,22 @@ const App = () => {
   return (
     <>
       <div className="App" onClick={handleClick} onMouseMove={handleDrag}>
-        <canvas height="100vh" width="100vh" className="root-canvas" />
+        <canvas height="100vh" width="100vh" className="parallelogram-canvas" />
+        <canvas height="100vh" width="100vh" className="circle-canvas" />
         <Button onClick={handleReset} message={"Reset"} />
-        {points.map((point, index) => <Point key={point.top} top={point.top} left={point.left} onMouseDown={startDrag(index)} onMouseUp={stopDrag} draggable={points.length === 3} />)}
+        <p>Parallelogram area: {getParallelogramArea([...points, finalPoint])}px²</p>
+        <p>Circle radius: {getCircleRadius(getParallelogramArea([...points, finalPoint]))}px</p>
+        <p>Circle area: {(Math.pow(getCircleRadius(getParallelogramArea([...points, finalPoint])), 2) * Math.PI).toFixed(0)}px²</p>
+        {points.map((point, index) =>
+          <Point
+            key={index}
+            top={point.top}
+            left={point.left}
+            onMouseDown={startDrag(index)}
+            onMouseUp={stopDrag}
+            draggable={points.length === 3}
+          />
+        )}
         {finalPoint.top && <Point top={finalPoint.top} left={finalPoint.left} final />}
         {centerPoint.top && <Point top={centerPoint.top} left={centerPoint.left} final />}
       </div>

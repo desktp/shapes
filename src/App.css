@@ -5,7 +5,7 @@
   min-height: 100vh;
 }
 
-.root-canvas {
+canvas {
   min-height: 100vh;
   pointer-events: none;
   position: absolute;
