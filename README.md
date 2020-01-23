@@ -2,6 +2,8 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+Access directly on https://desktp.github.io/shapes/
+
 ## Run in development mode
 ```bash
 $ yarn install
