@@ -1,14 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createRef } from 'react';
 import './App.css';
 import Point from './components/Point';
 import Button from './components/Button';
-import { getParallelogramArea, getCircleRadius } from './functions/math';
+import Canvas from './components/Canvas';
+import { getParallelogramArea, getParallelogramCenter, getCircleRadius } from './functions/math';
 
 const App = () => {
   const [points, setPoints] = useState([]);
   const [finalPoint, setFinalPoint] = useState({});
   const [centerPoint, setCenterPoint] = useState({});
   const [dragStatus, setDragging] = useState({ dragging: false, index: 0 });
+
+  // Using refs so we can get the DOM node without
+  // resorting to querySelector or similar
+  const parallelRef = createRef();
+  const circleRef = createRef();
 
   useEffect(() => {
     // if we have all 3 points, calculate final point
@@ -27,13 +33,17 @@ const App = () => {
     }
   }, [points]);
 
+  // We have all points, now to calculate the center
+  // and draw the parallelogram
   useEffect(() => {
     if (finalPoint.top) {
       drawParallelogram();
-      getParallelogramCenter();
+      const pCenter = getParallelogramCenter([...points, finalPoint]);
+      setCenterPoint(pCenter);
     };
   }, [finalPoint]);
 
+  // We have the center point, so we can draw the circle
   useEffect(() => {
     if (centerPoint.top) {
       drawCircle();
@@ -41,39 +51,41 @@ const App = () => {
   }, [centerPoint]);
 
   const drawParallelogram = () => {
-    var c = document.querySelector(".parallelogram-canvas");
-    // Set canvas size to match screen
-    c.width = document.body.clientWidth; //document.width is obsolete
-    c.height = document.body.clientHeight; //document.height is obsolete
- 
-    var ctx = c.getContext("2d");
+    const canvas = parallelRef.current;
+
+    const ctx = canvas.getContext("2d");
+    // Clear previous line
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
     ctx.strokeStyle = "blue";
     ctx.beginPath();
+    // Redo to use a loop with all vertices in an array
+    // Draw a line from each vertex to the next
     ctx.moveTo(points[0].left, points[0].top);
     ctx.lineTo(points[1].left, points[1].top);
     ctx.lineTo(points[2].left, points[2].top);
     ctx.lineTo(finalPoint.left, finalPoint.top);
+    // Then back to the first to close the polygon
     ctx.lineTo(points[0].left, points[0].top);
     ctx.stroke();
   }
 
   const drawCircle = () => {
-    var c = document.querySelector(".circle-canvas");
-    // Set canvas size to match screen
-    c.width = document.body.clientWidth; //document.width is obsolete
-    c.height = document.body.clientHeight; //document.height is obsolete
- 
-    var ctx = c.getContext("2d");
+    const canvas = circleRef.current;
+
+    const ctx = canvas.getContext("2d");
+    // Clear previous line
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const pArea = getParallelogramArea([...points, finalPoint]);
+    const cRadius = getCircleRadius(pArea);
+
     ctx.strokeStyle = "yellow";
     ctx.beginPath();
-    ctx.arc(centerPoint.left, centerPoint.top, getCircleRadius(getParallelogramArea([...points, finalPoint])), 0, 2 * Math.PI);
+    // center X, center Y, radius, arc start, arc end
+    // 2 * pi means 360 degrees
+    ctx.arc(centerPoint.left, centerPoint.top, cRadius, 0, 2 * Math.PI);
     ctx.stroke();
-  }
-
-  const getParallelogramCenter = () => {
-    const centerX = (points[0].left + points[1].left + points[2].left + finalPoint.left) / 4;
-    const centerY = (points[0].top + points[1].top + points[2].top + finalPoint.top) / 4;
-    setCenterPoint({ top: centerY, left: centerX });
   }
 
   const handleClick = (e) => {
@@ -88,9 +100,12 @@ const App = () => {
     e.stopPropagation();
     setPoints([]);
     setFinalPoint([]);
-    var c = document.querySelector("canvas");
-    var ctx = c.getContext("2d");
-    ctx.clearRect(0, 0, c.width, c.height);
+
+    const elements = document.querySelectorAll("canvas");
+    elements.forEach(el => {
+      const ctx = el.getContext("2d");
+      ctx.clearRect(0, 0, el.width, el.height);
+    })
   }
 
   const startDrag = (pointIndex) => (e) => {
@@ -115,8 +130,8 @@ const App = () => {
   return (
     <>
       <div className="App" onClick={handleClick} onMouseMove={handleDrag}>
-        <canvas height="100vh" width="100vh" className="parallelogram-canvas" />
-        <canvas height="100vh" width="100vh" className="circle-canvas" />
+        <Canvas ref={parallelRef} />
+        <Canvas ref={circleRef} />
         <Button onClick={handleReset} message={"Reset"} />
         <p>Parallelogram area: {getParallelogramArea([...points, finalPoint])}px²</p>
         <p>Circle radius: {getCircleRadius(getParallelogramArea([...points, finalPoint]))}px</p>

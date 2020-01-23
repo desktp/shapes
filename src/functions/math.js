@@ -20,8 +20,8 @@ export const getParallelogramArea = (vertices = []) => {
 }
 
 export const getParallelogramCenter = ([...vertices]) => {
-  let centerX;
-  let centerY;
+  let centerX = 0;
+  let centerY = 0;
   vertices.forEach(vertex => {
     centerX += vertex.left;
     centerY += vertex.top;
